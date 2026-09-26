@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RedSerpent Member Portal</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+<div id="loader" class="loader-screen">
+  <div class="loader-content" aria-hidden="true">
+    <div class="loader-line"><span id="loaderProgressFill"></span></div>
+    <div id="loaderProgressText" class="loader-status">0%</div>
+    <div id="loaderProgressStatus" class="loader-status">INITIALIZING MEMBER PORTAL</div>
+  </div>
+</div>
+
+<div id="app">
+  <section id="login" class="login-screen">
+    <div class="login-ui">
+      <img class="login-logo" src="redserpent-logo.png" alt="RedSerpent">
+      <div class="login-form">
+        <input id="ign" placeholder="IGN" autocomplete="off">
+        <input id="playerId" placeholder="Player ID" autocomplete="off">
+        <button id="signInBtn" type="button">SIGN IN <span>→</span></button>
+      </div>
+      <div class="login-note">DISCIPLINE • UNITY • PROGRESS • LEGACY</div>
+      <button id="adminAccessBtn" class="admin-access" type="button">ADMIN ACCESS</button>
+    </div>
+  </section>
+
+  <section id="portal" class="portal hidden">
+    <aside class="sidebar">
+      <div class="brand"><img src="redserpent-sidebar-brand.png" alt="RedSerpent Guild Management"></div>
+      <nav>
+        <a class="active" data-page="dashboard">⌂ <span>Dashboard</span></a>
+        <a id="rosterNav" data-page="rosters">♟ <span>Roster</span></a>
+        <a id="partyNav" data-page="party">♜ <span>Party Setup</span></a>
+      <a id="weeklyNav" class="hidden" data-page="weekly">▣ <span>Weekly Submissions</span></a>
+      <a id="adminNav" class="hidden" data-page="admin">⚙ <span>Admin Dashboard</span></a>
+      </nav>
+      <div class="sidebar-section-label">ACCOUNT</div>
+      <a class="sidebar-account-link" onclick="openProfileSettings()">⚙ <span>Profile / Settings</span></a>
+      <button class="logout" onclick="logout()">↪ Logout</button>
+    </aside>
+
+    <main class="main">
+      <header>
+        <div class="header-identity">
+          <span class="header-avatar" id="headerAvatar">S</span>
+          <div class="header-user-block">
+            <span class="header-welcome">Welcome back,</span>
+            <div class="header-name-line"><h2 id="headerMemberName">Shir0</h2><span class="header-role-badge" id="headerRoleBadge">◆ Guild Member</span></div>
+          </div>
+        </div>
+        <div class="header-right">
+          <span class="header-motto">“DISCIPLINE TODAY · A STRONGER TOMORROW.”</span>
+          <div class="server-time">
+            <span class="clock-icon">◷</span>
+            <div><span class="server-time-label">Server Time</span><span id="serverTime">Sep 27, 2026 12:00 AM</span></div>
+          </div>
+          <span class="status-dot"></span><span>Online</span>
+        </div>
+      </header>
+
+      <div id="dashboard" class="page dashboard-page">
+        <div id="adminDashboardContent" class="admin-dashboard-content hidden"></div>
+        <div id="memberDashboardContent">
+        <div class="portal-banner">
+          <div><p>ONE GUILD • ONE GOAL</p><strong>REDSERPENT</strong><span>MEMBER MANAGEMENT PORTAL</span></div>
+        </div>
+
+        <div class="dashboard-columns">
+          <div class="dashboard-main-column">
+            <section class="character-stats-panel stats-submission-only-panel">
+              <div class="section-head character-stats-head">
+                <div class="section-title-wrap"><span class="section-icon">⚙</span><h3>Character Stats</h3></div>
+                <div class="character-stats-actions"><span id="lastStatsUpdated" class="last-updated">Last Updated: —</span></div>
+              </div>
+              <div class="stats-submission-only-body">
+                <div class="stats-submission-icon">⚔</div>
+                <div>
+                  <h4>Character Stats Submission</h4>
+                  <p>Submit your current character stats together with a screenshot for Administrator review.</p>
+                </div>
+                <button class="submit-stats-main" type="button" onclick="openStatsSubmission()">➤ Submit Character Stats</button>
+              </div>
+            </section>
+
+            <section class="weekly-progress-card" role="button" tabindex="0" aria-label="Open Weekly Progression history" onclick="openWeeklyProgressionHistory()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openWeeklyProgressionHistory();}">
+              <div class="section-head progress-head"><div class="section-title-wrap"><span class="section-icon">↗</span><h3>Weekly Progression <small>(FEATHER • ASTROCORE • ENCHANT)</small></h3></div><button class="text-link" type="button" onclick="event.stopPropagation();openWeeklyProgressionHistory()">View History →</button></div>
+              <div id="dashboardProgression" class="progression-table"></div>
+            </section>
+
+            <section class="announcements-card">
+              <div class="section-head"><div class="section-title-wrap"><span class="section-icon">⚑</span><h3>Guild Announcements</h3></div><button class="text-link" type="button" onclick="viewAllAnnouncements()">View All →</button></div>
+              <div id="memberAnnouncementsList"></div>
+            </section>
+          </div>
+
+          <aside class="dashboard-side-column">
+            <section class="weekly-dashboard-card">
+              <div class="section-head"><div class="section-title-wrap"><span class="section-icon calendar-icon">▣</span><h3>Weekly Submission</h3></div><span class="current-badge">CURRENT WEEK</span></div>
+              <div class="weekly-body">
+                <div class="week-kicker">SUBMISSION WEEK</div>
+                <h2 id="memberWeekTitle">Week 1</h2>
+                <p class="week-range" id="memberWeekRange">September 27 – October 3, 2026</p>
+                <span class="submission-state" id="memberWeekBadge">NOT SUBMITTED</span>
+                <p class="submission-help" id="memberWeekStatus">You can submit your weekly progression anytime from Monday – Sunday.</p>
+                <button id="submitWeeklyBtn" class="submit-weekly" type="button">➤ &nbsp; Submit Weekly Stats</button>
+                <div class="submission-meta"><div><span>Status</span><b id="memberSubmissionStatus">Not Submitted</b></div><div><span>Submission Date</span><b id="memberSubmissionDate">—</b></div><div><span>Time Remaining</span><b id="memberTimeRemaining">—</b></div></div>
+              </div>
+            </section>
+
+            <section class="quote-card">
+              <div class="quote-mark">“</div>
+              <p>INDIVIDUALLY, WE ARE STRONG.<br>TOGETHER, WE ARE <b>REDSERPENT.</b></p>
+              <span>REDSERPENT</span>
+            </section>
+          </aside>
+        </div>
+        </div>
+        <button id="updateIgnBtn" class="hidden" type="button">Update IGN</button>
+      </div>
+
+      <div id="rosters" class="page hidden">
+        <div class="section-head"><div><p class="eyebrow">MEMBERS</p><h2>Rosters</h2></div><button class="outline">Columns ▾</button></div>
+        <div id="rosterListContent">
+        <div class="toolbar"><input id="search" placeholder="Search player..." oninput="renderRoster()"><select id="jobFilter" onchange="renderRoster()"></select><select id="roleFilter" onchange="updateRosterJobFilter();renderRoster()"><option value="">All Roles</option><option value="Carry">Carry</option><option value="Support">Support</option><option value="Utility">Utility</option></select><select id="statsFilter" onchange="renderRoster()"><option value="">All Stats</option><option value="Outdated Stats">Outdated Stats</option></select></div>
+        <div class="table-wrap"><table><thead><tr>
+<th>IGN</th><th>Status</th><th>Role</th><th>Job Class</th><th>HP</th><th>PATK</th><th>MATK</th><th>Base PDEF</th><th>Base MDEF</th>
+<th>Healing Done %</th><th>Healing Taken %</th><th>Crit Res</th><th>Crit Dmg Res %</th><th>CRI</th>
+<th>PDMG Reduction %</th><th>MDMG Reduction %</th><th>PDMG %</th><th>MDMG %</th><th>Ignore PDEF</th><th>Ignore MDEF</th>
+<th>PVP DMG Reduction</th><th>PVP DMG Bonus</th><th>Equipment PDEF %</th><th>Equipment MDEF %</th>
+<th>DMG vs Medium %</th><th>DMG Reduction vs Medium %</th><th>DMG vs Demi-Human %</th><th>DMG Reduction vs Demi-Human %</th>
+<th>Submission</th></tr></thead><tbody id="rosterBody"></tbody></table></div>
+        <p class="hint">Click a player to view detailed stats and weekly comparison. Status is managed by Admin.</p>
+        </div>
+      </div>
+
+      <div id="party" class="page hidden">
+        <div class="section-head"><div><p class="eyebrow">WAR ROOM</p><h2>Party Setup</h2></div><button class="cyan" id="publishPartyBtn">Publish Setup</button></div>
+        <div class="party-controls"><select id="eventType" onchange="renderPartySetup()"><option value="GL">Guild League</option><option value="WOE">War of Emperium</option></select><input id="partyDate" type="date" value="2026-09-12"><span class="pill" id="partyStatus">DRAFT</span></div>
+        <div id="partyBoard" class="party-board"></div>
+      </div>
+
+      <div id="weekly" class="page hidden">
+        <div class="section-head">
+          <div><p class="eyebrow">ADMINISTRATION</p><h2>Weekly Submissions</h2></div>
+          <select id="weeklyAdminWeek" class="top-select" onchange="renderWeeklyAdmin()"></select>
+        </div>
+        <div class="admin-summary">
+          <div class="card"><label>📅 WEEK</label><strong id="weeklyAdminTitle">Week 1</strong></div>
+          <div class="card"><label>📝 SUBMITTED</label><strong id="weeklyAdminSubmitted">0</strong></div>
+          <div class="card"><label>⚠️ MISSING</label><strong id="weeklyAdminMissing">0</strong></div>
+        </div>
+        <div class="section-head" style="margin-top:18px"><div><p class="eyebrow">SUBMISSION STATUS</p><h3 id="weeklyAdminRange">September 27–October 3, 2026</h3></div><span class="pill" id="weeklyAdminWindow">CLOSED • WEEK ENDED</span></div>
+        <div class="admin-panel table-wrap"><table class="weekly-table"><thead><tr><th>IGN</th><th>ROLE</th><th>JOB CLASS</th><th>STATUS</th><th>SUBMITTED</th><th>ACTION</th></tr></thead><tbody id="weeklyAdminBody"></tbody></table></div>
+      </div>
+
+      <div id="admin" class="page hidden">
+        <div class="section-head">
+          <div><p class="eyebrow">ADMINISTRATION</p><h2>Admin Dashboard</h2></div>
+          <button class="add-member-button" id="addMemberBtn"><span>＋</span> Add Member</button>
+        </div>
+        <div class="admin-summary">
+          <div class="card"><label>👥 TOTAL MEMBERS</label><strong id="adminTotal">0</strong></div>
+          <div class="card"><label>🟢 ACTIVE MEMBERS</label><strong id="adminActive">0</strong></div>
+          <div class="card"><label>🔒 INACTIVE MEMBERS</label><strong id="adminInactive">0</strong></div>
+        </div>
+        <div class="section-head" style="margin-top:8px"><div><p class="eyebrow">MEMBER MANAGEMENT</p><h3>Members</h3></div><input id="adminSearch" class="admin-search" placeholder="🔎 Search members..."></div>
+        <div class="admin-panel table-wrap"><table><thead><tr><th>IGN</th><th>UID</th><th>ROLE</th><th>JOB CLASS</th><th>STATUS</th><th>MEMBER SINCE</th><th>ACTIONS</th></tr></thead><tbody id="adminBody"></tbody></table></div>
+      </div>
+
+
+    </main>
+  </section>
+
+  
+  <div id="statsSubmissionModal" class="modal hidden" onclick="closeStatsSubmission()">
+    <div class="modal-card stats-submission-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeStatsSubmission()">×</button>
+      <p class="eyebrow">MEMBER • CHARACTER STATS</p>
+      <h2>Submit Character Stats</h2>
+      <p class="hint">Enter your current complete stats and attach a screenshot. Only your own submission is saved to your account.</p>
+      <div class="submission-account-grid">
+        <div><small>IGN</small><b id="statsSubmitMember">—</b></div>
+        <div><small>PLAYER ID</small><b id="statsSubmitUid">—</b></div>
+        <div><small>ROLE</small><b id="statsSubmitRole">—</b></div>
+        <div><small>JOB CLASS</small><b id="statsSubmitJob">—</b></div>
+      </div>
+      <div class="stats-submit-grid">
+<label><span>HP</span><input id="submitStat_hp" type="number" step="any" value="0"></label>
+<label><span>PATK</span><input id="submitStat_patk" type="number" step="any" value="0"></label>
+<label><span>MATK</span><input id="submitStat_matk" type="number" step="any" value="0"></label>
+<label><span>BASE PDEF</span><input id="submitStat_basePdef" type="number" step="any" value="0"></label>
+<label><span>BASE MDEF</span><input id="submitStat_baseMdef" type="number" step="any" value="0"></label>
+<label><span>HEALING DONE %</span><input id="submitStat_healingDone" type="number" step="any" value="0"></label>
+<label><span>HEALING TAKEN %</span><input id="submitStat_healingTaken" type="number" step="any" value="0"></label>
+<label><span>CRIT RES</span><input id="submitStat_critRes" type="number" step="any" value="0"></label>
+<label><span>CRIT DMG RES %</span><input id="submitStat_critDmgRes" type="number" step="any" value="0"></label>
+<label><span>CRI</span><input id="submitStat_cri" type="number" step="any" value="0"></label>
+<label><span>PDMG REDUCTION %</span><input id="submitStat_pdmgReduction" type="number" step="any" value="0"></label>
+<label><span>MDMG REDUCTION %</span><input id="submitStat_mdmgReduction" type="number" step="any" value="0"></label>
+<label><span>PDMG %</span><input id="submitStat_pdmg" type="number" step="any" value="0"></label>
+<label><span>MDMG %</span><input id="submitStat_mdmg" type="number" step="any" value="0"></label>
+<label><span>IGNORE PDEF</span><input id="submitStat_ignorePdef" type="number" step="any" value="0"></label>
+<label><span>IGNORE MDEF</span><input id="submitStat_ignoreMdef" type="number" step="any" value="0"></label>
+<label><span>PVP DMG REDUCTION</span><input id="submitStat_pvpReduction" type="number" step="any" value="0"></label>
+<label><span>PVP DMG BONUS</span><input id="submitStat_pvpBonus" type="number" step="any" value="0"></label>
+<label><span>EQUIPMENT PDEF %</span><input id="submitStat_equipPdef" type="number" step="any" value="0"></label>
+<label><span>EQUIPMENT MDEF %</span><input id="submitStat_equipMdef" type="number" step="any" value="0"></label>
+<label><span>DMG VS MEDIUM %</span><input id="submitStat_mediumDmg" type="number" step="any" value="0"></label>
+<label><span>DMG REDUCTION VS MEDIUM %</span><input id="submitStat_mediumReduction" type="number" step="any" value="0"></label>
+<label><span>DMG VS DEMI-HUMAN %</span><input id="submitStat_demiDmg" type="number" step="any" value="0"></label>
+<label><span>DMG REDUCTION VS DEMI-HUMAN %</span><input id="submitStat_demiReduction" type="number" step="any" value="0"></label>
+
+      </div>
+      <div class="stats-screenshot-box">
+        <div>
+          <b>STAT SCREENSHOT</b>
+          <p class="hint">Required. Upload an image showing your current in-game character stats.</p>
+          <input id="statsScreenshotFile" type="file" accept="image/*" onchange="previewStatsScreenshot(this)">
+          <div id="statsSubmissionExisting" class="submission-existing">No previous character stats submission.</div>
+        </div>
+        <img id="statsScreenshotPreview" class="stats-screenshot-preview hidden" alt="Screenshot preview">
+      </div>
+      <div class="editor-actions">
+        <button class="outline" type="button" onclick="closeStatsSubmission()">Cancel</button>
+        <button class="cyan" type="button" onclick="submitCharacterStats()">➤ Submit Character Stats</button>
+      </div>
+    </div>
+  </div>
+
+<div id="adminWeeklySubmissionModal" class="modal hidden" onclick="closeAdminWeeklySubmission()">
+    <div class="modal-card admin-weekly-submission-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeAdminWeeklySubmission()">×</button>
+      <div class="admin-weekly-modal-head">
+        <div>
+          <p class="eyebrow">ADMINISTRATION • WEEKLY SUBMISSION</p>
+          <h2>Weekly Submission Details</h2>
+          <p id="adminWeeklyModalSubtitle" class="hint">View the member's saved snapshot for the selected week.</p>
+        </div>
+        <select id="adminWeeklyModalWeek" class="top-select" onchange="renderAdminWeeklySubmission()"></select>
+      </div>
+      <div id="adminWeeklyModalMember" class="admin-weekly-member"></div>
+      <div id="adminWeeklyModalTabs" class="admin-weekly-tabs">
+        <button type="button" class="active" data-tab="overview" onclick="selectAdminWeeklyTab('overview')">Overview</button>
+        <button type="button" data-tab="feather" onclick="selectAdminWeeklyTab('feather')">🪶 Feather</button>
+        <button type="button" data-tab="astrocore" onclick="selectAdminWeeklyTab('astrocore')">🔮 Astrocore</button>
+        <button type="button" data-tab="enchant" onclick="selectAdminWeeklyTab('enchant')">✨ Enchant</button>
+        <button type="button" data-tab="medal" onclick="selectAdminWeeklyTab('medal')">🏅 Medal</button>
+        <button type="button" data-tab="screenshots" onclick="selectAdminWeeklyTab('screenshots')">Screenshots</button>
+      </div>
+      <div id="adminWeeklyModalContent" class="admin-weekly-content"></div>
+      <div class="admin-weekly-modal-footer">
+        <span id="adminWeeklyModalStatus" class="hint"></span>
+        <button type="button" class="outline" onclick="closeAdminWeeklySubmission()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="weeklyProgressionHistoryModal" class="modal hidden" onclick="closeWeeklyProgressionHistory()">
+    <div class="modal-card weekly-history-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeWeeklyProgressionHistory()">×</button>
+      <p class="eyebrow">RED SERPENT • WEEKLY PROGRESSION</p>
+      <div class="weekly-history-title-row"><div><h2>Weekly Progression</h2><p id="weeklyHistoryRange" class="hint">Select a week to view the saved progression.</p></div><span id="weeklyHistoryMemberBadge" class="current-badge">HISTORY</span></div>
+      <div id="weeklyHistoryWeekTabs" class="weekly-history-weeks"></div>
+      <div id="weeklyHistoryTypeTabs" class="weekly-history-types">
+        <button type="button" class="weekly-history-type active" data-type="feather" onclick="selectWeeklyHistoryType('feather')">🪶 Feather Count</button>
+        <button type="button" class="weekly-history-type" data-type="astrocore" onclick="selectWeeklyHistoryType('astrocore')">🔮 Astrocore</button>
+        <button type="button" class="weekly-history-type" data-type="enchant" onclick="selectWeeklyHistoryType('enchant')">✨ Enchant</button>
+        <button type="button" class="weekly-history-type" data-type="medal" onclick="selectWeeklyHistoryType('medal')">🏅 Medal</button>
+      </div>
+      <div id="weeklyHistoryContent" class="weekly-history-content"></div>
+    </div>
+  </div>
+
+  <div id="weeklyChoiceModal" class="modal hidden" onclick="closeWeeklyChoice()">
+    <div class="modal-card weekly-choice-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeWeeklyChoice()">×</button>
+      <p class="eyebrow">WEEKLY PROGRESSION</p>
+      <h2>Choose Your Submission</h2>
+      <p class="hint">Select the progression you want to submit for this week.</p>
+      <div class="weekly-choice-grid">
+        <button class="weekly-choice-card" type="button" onclick="selectWeeklySubmission('feather')">
+          <span class="weekly-choice-icon">🪶</span>
+          <span class="weekly-choice-title">Feather</span>
+          <span class="weekly-choice-desc">Submit your 5 Attack + 5 Defense Feather screenshots.</span>
+        </button>
+        <button class="weekly-choice-card" type="button" onclick="selectWeeklySubmission('astrocore')">
+          <span class="weekly-choice-icon">🔮</span>
+          <span class="weekly-choice-title">Astrocore</span>
+          <span class="weekly-choice-desc">Submit your current Astrocore progression.</span>
+        </button>
+        <button class="weekly-choice-card" type="button" onclick="selectWeeklySubmission('enchant')">
+          <span class="weekly-choice-icon">✨</span>
+          <span class="weekly-choice-title">Enchant</span>
+          <span class="weekly-choice-desc">Submit your current Enchant progression.</span>
+        </button>
+        <button class="weekly-choice-card" type="button" onclick="selectWeeklySubmission('medal')">
+          <span class="weekly-choice-icon">🏅</span>
+          <span class="weekly-choice-title">Medal</span>
+          <span class="weekly-choice-desc">Upload your Medal screenshot and let the system read all 8 levels.</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="weeklyAstrocoreModal" class="modal hidden" onclick="closeWeeklyAstrocore()">
+    <div class="modal-card weekly-astro-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeWeeklyAstrocore()">×</button>
+      <p class="eyebrow">WEEKLY PROGRESSION • ASTROCORE</p>
+      <h2>Astrocore Submission</h2>
+      <p class="hint">Enter the current level of each Astrocore. Review the values before saving.</p>
+      <div class="astro-level-section astro-manual-section">
+        <div class="astro-level-head"><span>ASTROCORE LEVELS</span><small>6 values required</small></div>
+        <div id="astroLevelsGrid" class="astro-level-grid"></div>
+      </div>
+      <div class="ocr-confirm-row"><span id="astroConfirmText">Enter all 6 Astrocore levels to continue.</span><button id="astroSaveBtn" class="cyan" type="button" disabled>Confirm &amp; Save</button></div>
+    </div>
+  </div>
+
+
+  <div id="weeklyEnchantModal" class="modal hidden" onclick="closeWeeklyEnchant()">
+    <div class="modal-card weekly-enchant-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeWeeklyEnchant()">×</button>
+      <p class="eyebrow">WEEKLY PROGRESSION · ENCHANT</p>
+      <h2>Enchant Submission</h2>
+      <p class="hint">Enter the current enchant level and enchant effect for each equipment slot.</p>
+      <div class="enchant-list" id="enchantList"></div>
+      <div class="ocr-confirm-row"><span id="enchantConfirmText">Complete all 12 enchant entries to continue.</span><button id="enchantSaveBtn" class="cyan" type="button" disabled>Confirm &amp; Save</button></div>
+    </div>
+  </div>
+
+
+  <div id="weeklyMedalModal" class="modal hidden" onclick="closeWeeklyMedal()">
+    <div class="modal-card weekly-medal-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeWeeklyMedal()">×</button>
+      <p class="eyebrow">WEEKLY PROGRESSION · MEDAL</p>
+      <h2>Medal Submission</h2>
+      <p class="hint">Upload your Medal screenshot, then enter the current level of all 8 Medals. Review the values before saving.</p>
+      <label class="medal-upload-box" for="medalFileInput">
+        <span>🖼️</span><b>Click to upload Medal screenshot</b><small>PNG, JPG (Max 10MB)</small>
+        <input id="medalFileInput" type="file" accept="image/png,image/jpeg" />
+      </label>
+      <div id="medalPreviewWrap" class="medal-preview-wrap"><span>No screenshot uploaded yet.</span><img id="medalPreview" alt="Medal screenshot preview"></div>
+      <div class="medal-detected-head"><span>MEDAL LEVELS</span><small id="medalDetectedBadge">0/8 COMPLETE</small></div>
+      <div id="medalLevelsGrid" class="medal-levels-grid"></div>
+      <div class="ocr-confirm-row"><span id="medalConfirmText">Enter all 8 Medal levels.</span><button id="medalSaveBtn" class="cyan" type="button" disabled>Confirm &amp; Save</button></div>
+    </div>
+  </div>
+
+
+  <div id="weeklyOcrModal" class="modal hidden" onclick="closeWeeklyOcr()">
+    <div class="modal-card weekly-ocr-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeWeeklyOcr()">×</button>
+      <p class="eyebrow">WEEKLY PROGRESSION</p>
+      <h2>Upload Progress Screenshots</h2>
+      <p class="hint">There are 5 Attack rows and 5 Defense rows in-game. Upload one screenshot for each row. The system will read the 5 visible feathers in each row, calculate their Feather Count, then you confirm before saving.</p>
+      <div class="ocr-results ocr-summary-grid">
+        <div class="ocr-summary-total"><label>TOTAL FEATHER COUNT</label><strong id="ocrTotal">—</strong></div>
+        <div><label>TIME / SPACE</label><strong id="ocrTimeSpace">—</strong></div>
+        <div><label>DIVINE / NATURE</label><strong id="ocrDivineNature">—</strong></div>
+        <div><label>DAY / NIGHT</label><strong id="ocrDayNight">—</strong></div>
+        <div><label>SKY / TERRA</label><strong id="ocrSkyTerra">—</strong></div>
+        <div><label>LIGHT / DARK</label><strong id="ocrLightDark">—</strong></div>
+      </div>
+      <div class="ocr-rows-section">
+        <div class="ocr-rows-head"><span>FEATHER ROWS</span><small>5 ATTACK + 5 DEFENSE</small></div>
+        <div id="ocrRowsList" class="ocr-rows-list"></div>
+      </div>
+      <div class="ocr-confirm-row"><span id="ocrConfirmText">Upload all 10 row screenshots to continue.</span><button id="ocrSaveBtn" class="cyan" type="button" disabled>Confirm & Save</button></div>
+    </div>
+  </div>
+
+  <div id="adminLoginModal" class="modal hidden" onclick="closeAdminLogin()">
+    <div class="modal-card admin-login-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeAdminLogin()">×</button>
+      <div class="admin-login-icon">⚙</div>
+      <p class="eyebrow">REDSERPENT · SECURE ACCESS</p>
+      <h2>Administrator Login</h2>
+      <p class="hint">Enter your administrator credentials to continue.</p>
+      <div class="admin-login-form">
+        <label>ADMIN USERNAME<input id="adminUsernameInput" type="text" autocomplete="username" placeholder="Enter username"></label>
+        <label>ADMIN PASSWORD<input id="adminPasswordInput" type="password" autocomplete="current-password" placeholder="Enter password"></label>
+      </div>
+      <div id="adminLoginError" class="admin-login-error hidden">Invalid administrator credentials.</div>
+      <div class="editor-actions admin-login-actions">
+        <button class="outline" type="button" onclick="closeAdminLogin()">Cancel</button>
+        <button class="cyan" type="button" id="adminLoginSubmit">Sign In</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="announcementEditorModal" class="modal hidden" onclick="closeAnnouncementEditor()">
+    <div class="modal-card announcement-editor" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeAnnouncementEditor()">×</button>
+      <p class="eyebrow">GUILD MANAGEMENT</p>
+      <h2 id="announcementEditorTitle">Add Announcement</h2>
+      <p class="hint">Create an announcement that will appear on the Admin Dashboard and Member Dashboard.</p>
+      <div class="admin-form announcement-form">
+        <label>TITLE<input id="announcementTitleInput" maxlength="80" autocomplete="off" placeholder="e.g. Weekly Submission Reminder"></label>
+        <label>MESSAGE<textarea id="announcementMessageInput" maxlength="240" rows="4" placeholder="Write your announcement..."></textarea></label>
+        <label>TYPE<select id="announcementTypeInput"><option value="reminder">Reminder</option><option value="info">Information</option><option value="event">Event</option><option value="party">Party Setup</option></select></label>
+      </div>
+      <div class="editor-actions"><button class="outline" type="button" onclick="closeAnnouncementEditor()">Cancel</button><button class="cyan" type="button" onclick="saveAnnouncement()">Save Announcement</button></div>
+    </div>
+  </div>
+
+  <div id="announcementsListModal" class="modal hidden" onclick="closeAnnouncementsListModal()">
+    <div class="modal-card announcements-list-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeAnnouncementsListModal()">×</button>
+      <div class="ann-list-hero">
+        <div class="ann-list-icon">📢</div>
+        <div><p class="eyebrow">GUILD MANAGEMENT</p><h2>Announcements</h2><p class="hint">Latest updates, reminders, and important information for all members.</p></div>
+      </div>
+      <div class="ann-list-divider"></div>
+      <div class="ann-list-toolbar">
+        <div class="ann-filters" role="tablist" aria-label="Announcement filters">
+          <button class="ann-filter active" type="button" data-filter="all" onclick="setAnnouncementFilter('all')">📢 All</button>
+          <button class="ann-filter" type="button" data-filter="reminder" onclick="setAnnouncementFilter('reminder')">📢 Reminder</button>
+          <button class="ann-filter" type="button" data-filter="event" onclick="setAnnouncementFilter('event')">▣ Event</button>
+          <button class="ann-filter" type="button" data-filter="info" onclick="setAnnouncementFilter('info')">▤ Update</button>
+          <button class="ann-filter" type="button" data-filter="party" onclick="setAnnouncementFilter('party')">⚑ Important</button>
+        </div>
+        <button class="ann-list-add" type="button" onclick="closeAnnouncementsListModal();openAnnouncementEditor()">＋ Add Announcement</button>
+      </div>
+      <div id="announcementsListContent" class="announcements-list-content"></div>
+      <div class="ann-list-footer"><span id="announcementsListCount">0 Announcements</span><div class="ann-list-brand">ONE GUILD · ONE GOAL<br><small>REDSERPENT</small></div><button class="outline" type="button" onclick="closeAnnouncementsListModal()">× Close</button></div>
+    </div>
+  </div>
+
+  <div id="announcementDetailModal" class="modal hidden" onclick="closeAnnouncementDetail()">
+    <div class="modal-card announcement-detail-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeAnnouncementDetail()">×</button>
+      <div class="ann-detail-hero">
+        <div class="ann-detail-icon">📢</div>
+        <div><p class="eyebrow">GUILD ANNOUNCEMENT</p><span id="announcementDetailType" class="ann-type-badge reminder">Reminder</span><h2 id="announcementDetailTitle">Announcement</h2><p class="hint">Please read the full announcement below.</p></div>
+      </div>
+      <div class="ann-detail-body"><p id="announcementDetailMessage"></p></div>
+      <div class="ann-detail-meta"><span>📅 <b id="announcementDetailDate">—</b></span><span>🕒 <b id="announcementDetailTime">—</b></span></div>
+      <div class="ann-detail-footer"><span>ONE GUILD · ONE GOAL</span><button class="outline" type="button" onclick="closeAnnouncementDetail()">× Close</button></div>
+    </div>
+  </div>
+
+  <div id="profileSaveToast" class="profile-save-toast" role="status" aria-live="polite">✓ Profile updated successfully</div>
+
+  <div id="profileSettingsModal" class="modal hidden" onclick="closeProfileSettings()">
+    <div class="modal-card profile-settings-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeProfileSettings()">×</button>
+      <div class="profile-settings-head">
+        <div class="profile-settings-avatar" id="profileSettingsAvatar">S</div>
+        <div><p class="eyebrow">ACCOUNT</p><h2>Profile / Settings</h2><p class="hint">Manage your account information and profile details.</p></div>
+      </div>
+      <div id="memberProfileSettings" class="profile-settings-body">
+        <div class="profile-settings-grid">
+          <label>IGN<input id="profileIgnInput" maxlength="32" autocomplete="off"></label>
+          <label>PLAYER ID<input id="profileUidInput" readonly></label>
+          <label>ROLE<select id="profileRoleInput"><option value="Carry">Carry</option><option value="Support">Support</option><option value="Utility">Utility</option></select></label>
+          <label>JOB CLASS<select id="profileJobInput"></select></label>
+        </div>
+        <div class="profile-settings-note">Changes to your IGN, role, and job class are saved to your guild profile and reflected throughout the portal.</div>
+        <div class="editor-actions"><button class="outline" type="button" onclick="closeProfileSettings()">Cancel</button><button class="cyan" type="button" onclick="saveProfileSettings()">Save Changes</button></div>
+      </div>
+      <div id="adminProfileSettings" class="profile-settings-body hidden">
+        <div class="profile-account-card">
+          <div><span>ACCOUNT TYPE</span><b id="profileAdminType">Administrator</b></div>
+          <div><span>USERNAME</span><b id="profileAdminUsername">admin</b></div>
+          <div><span>ACCESS</span><b id="profileAdminAccess" class="profile-access">FULL ADMIN ACCESS</b></div>
+        </div>
+        <div id="masterAdminSecurity" class="profile-security-section hidden">
+          <div class="profile-security-head"><div><p class="eyebrow">MASTER ADMIN</p><h3>Security</h3></div><span class="profile-security-badge">OWNER ACCOUNT</span></div>
+          <p class="hint">Change the password for the main RedSerpent administrator account.</p>
+          <div class="profile-password-grid">
+            <label>CURRENT PASSWORD<input id="profileCurrentPassword" type="password" autocomplete="current-password" placeholder="Enter current password"></label>
+            <label>NEW PASSWORD<input id="profileNewPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters"></label>
+            <label>CONFIRM NEW PASSWORD<input id="profileConfirmPassword" type="password" autocomplete="new-password" placeholder="Re-enter new password"></label>
+          </div>
+          <div id="profilePasswordError" class="profile-password-error hidden"></div>
+          <div class="editor-actions"><button class="outline" type="button" onclick="closeProfileSettings()">Close</button><button class="cyan" type="button" onclick="changeMasterPassword()">Change Password</button></div>
+        </div>
+        <div id="regularAdminSecurity" class="profile-security-section hidden">
+          <div class="profile-security-head"><div><p class="eyebrow">ADMIN ACCOUNT</p><h3>Access Managed by Master Admin</h3></div><span class="profile-security-badge regular">ADMIN</span></div>
+          <p class="hint">This administrator account has admin access, but cannot change the Master Admin credentials.</p>
+          <div class="editor-actions"><button class="outline" type="button" onclick="closeProfileSettings()">Close</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="memberEditor" class="modal hidden" onclick="closeEditor()">
+    <div class="modal-card admin-editor admin-member-editor" onclick="event.stopPropagation()">
+      <button class="close" onclick="closeEditor()">×</button>
+      <p class="eyebrow">MEMBER MANAGEMENT</p><h2 id="editorTitle">Add Member</h2><p class="editor-subtitle">Create or update a guild member account and membership details.</p>
+      <div class="admin-form">
+        <label>IGN<input id="newIgn" autocomplete="off"></label>
+        <label>UID / PLAYER ID<input id="newUid" autocomplete="off"></label>
+        <label>ROLE<select id="newRole"><option>Carry</option><option>Support</option><option>Utility</option></select></label>
+        <label>JOB CLASS<select id="newJob"></select></label>
+        <label>ACCOUNT TYPE<select id="newAccountType"><option value="Member">Member</option><option value="Admin">Admin</option></select></label>
+        <label>STATUS<select id="newStatus"><option>Active</option><option>Inactive</option><option>On Leave</option></select></label>
+        <label>MEMBER SINCE<input id="newSince" type="date"></label>
+      </div>
+      <div class="editor-actions"><button class="outline" onclick="closeEditor()">Cancel</button><button class="cyan" onclick="saveMember()">Save Member</button></div>
+    </div>
+  </div>
+
+  <div id="modal" class="modal hidden" onclick="closeModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="close" onclick="hideModal()">×</button>
+      <p class="eyebrow">PLAYER DETAIL</p><h2 id="modalName">Shir0</h2><div class="score-row"><div><b id="totalRawPdef">6,830</b><span>Total Raw PDEF</span></div><div><b id="totalRawMdef">5,210</b><span>Total Raw MDEF</span></div></div>
+      <div class="detail-grid" id="detailGrid"></div>
+      <div class="compare"><b>Weekly comparison</b><span>▲ +320 PATK</span><span>▲ +180 PVP DMG</span><span>▼ -40 Raw PDEF</span></div>
+    </div>
+  </div>
+</div>
+<script src="app.js?v=admin-dashboard-v2"></script>
+
+
+  <div id="detailImageModal" class="modal hidden" onclick="if(event.target.id==='detailImageModal')closeDetailImage()">
+    <div class="detail-image-lightbox" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeDetailImage()">×</button>
+      <div class="detail-image-toolbar">
+        <button type="button" onclick="changeDetailZoom(-.25)">−</button>
+        <span id="detailZoomValue">100%</span>
+        <button type="button" onclick="changeDetailZoom(.25)">＋</button>
+        <button type="button" onclick="resetDetailZoom()">Reset</button>
+      </div>
+      <div class="detail-image-stage">
+        <img id="detailZoomImage" alt="Submitted screenshot">
+      </div>
+    </div>
+  </div>
+  <div id="adminStatsSubmissionModal" class="modal hidden" onclick="closeAdminStatsSubmission()">
+    <div class="modal-card admin-stats-submission-modal" onclick="event.stopPropagation()">
+      <button class="close" type="button" onclick="closeAdminStatsSubmission()">×</button>
+      <p class="eyebrow">ADMIN • CHARACTER STATS</p>
+      <h2 id="adminStatsSubmissionName">Member</h2>
+      <p id="adminStatsSubmissionMeta" class="hint">—</p>
+      <div id="adminStatsSubmissionGrid" class="admin-submission-stat-grid"></div>
+      <div class="admin-submission-shot"><b>STAT SCREENSHOT</b><img id="adminStatsSubmissionImage" class="stats-submission-image hidden" alt="Submitted character stats screenshot"></div>
+      <div class="editor-actions"><button class="outline" type="button" onclick="closeAdminStatsSubmission()">Close</button></div>
+    </div>
+  </div>
+</body>
+</html>
